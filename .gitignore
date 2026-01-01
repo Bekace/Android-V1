@@ -1,0 +1,15 @@
+# IDE files
+.idea/
+*.iml
+.gradle/
+local.properties
+
+# Build files
+build/
+
+# Mac files
+.DS_Store
+
+# Captures
+.cxx/
+*.hprof
