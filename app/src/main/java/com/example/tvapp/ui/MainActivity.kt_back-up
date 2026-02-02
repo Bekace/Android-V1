@@ -1,0 +1,224 @@
+/*
+package com.example.tvapp.ui
+
+import android.content.ComponentName
+import android.content.Context
+import android.content.Intent
+import android.content.ServiceConnection
+import android.content.pm.ActivityInfo
+import android.graphics.Color
+import android.os.Bundle
+import android.os.IBinder
+import android.view.Gravity
+import android.view.View
+import android.view.ViewGroup
+import androidx.core.view.updateLayoutParams
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentActivity
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
+import com.example.tvapp.R
+import com.example.tvapp.databinding.ActivityMainBinding
+import com.example.tvapp.engine.PlaybackEngine
+import com.example.tvapp.engine.PlaybackState
+import com.example.tvapp.player.PlayerController
+import com.example.tvapp.service.PlaybackService
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
+
+class MainActivity : FragmentActivity() {
+
+    private lateinit var binding: ActivityMainBinding
+    private var playbackEngine: PlaybackEngine? = null
+    private var playerController: PlayerController? = null
+    private var isBound = false
+
+    // Track the WebPairingFragment instance
+    private var webPairingFragment: WebPairingFragment? = null
+
+    private val connection = object : ServiceConnection {
+        override fun onServiceConnected(className: ComponentName, service: IBinder) {
+            val binder = service as PlaybackService.LocalBinder
+            playbackEngine = binder.getEngine()
+            playerController = binder.getPlayerController()
+            isBound = true
+
+            lifecycleScope.launch {
+                repeatOnLifecycle(Lifecycle.State.STARTED) {
+                    launch {
+                        playbackEngine?.state?.collectLatest { state ->
+                            updateUiForState(state)
+                        }
+                    }
+                    launch {
+                        playbackEngine?.orientation?.collectLatest { orientation ->
+                            applyOrientation(orientation)
+                        }
+                    }
+                }
+            }
+        }
+
+        override fun onServiceDisconnected(arg0: ComponentName) {
+            isBound = false
+            playbackEngine = null
+            playerController = null
+        }
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        if (savedInstanceState != null) {
+            finish()
+            startActivity(intent)
+            return
+        }
+
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+
+        val serviceIntent = Intent(this, PlaybackService::class.java)
+        startService(serviceIntent)
+        
+        // Initialize or retrieve WebPairingFragment
+        webPairingFragment = supportFragmentManager.findFragmentByTag(TAG_WEB_PAIRING) as? WebPairingFragment
+        if (webPairingFragment == null) {
+            webPairingFragment = WebPairingFragment.newInstance("") // Initial empty code
+            webPairingFragment?.onPairingCompleteListener = {
+                playbackEngine?.restartLifecycle()
+            }
+            supportFragmentManager.beginTransaction()
+                .add(R.id.fragment_container, webPairingFragment!!, TAG_WEB_PAIRING)
+                .hide(webPairingFragment!!) // Start hidden
+                .commitAllowingStateLoss()
+        } else {
+            // If fragment exists (e.g., after config change), re-attach listener
+            webPairingFragment?.onPairingCompleteListener = {
+                playbackEngine?.restartLifecycle()
+            }
+        }
+    }
+
+    override fun fun onStart() {
+        super.onStart()
+        Intent(this, PlaybackService::class.java).also {
+            bindService(it, connection, Context.BIND_AUTO_CREATE)
+        }
+    }
+
+    override fun onStop() {
+        super.onStop()
+        if (isBound) {
+            unbindService(connection)
+            isBound = false
+        }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        if (isFinishing) {
+            // Only stop the service if the activity is truly finishing (app being closed)
+            stopService(Intent(this, PlaybackService::class.java))
+        }
+    }
+
+    private fun applyOrientation(orientation: String) {
+        requestedOrientation = when (orientation.lowercase()) {
+            "landscape" -> ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+            "portrait" -> ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+            else -> ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+        }
+    }
+
+    private fun updateUiForState(state: PlaybackState) {
+        // Ensure native status textview is hidden by default, unless explicitly needed
+        binding.statusTextview.visibility = View.GONE
+        binding.fragmentContainer.visibility = View.GONE // Start with container hidden
+
+        val transaction = supportFragmentManager.beginTransaction()
+
+        // The problematic blanket fragment hiding logic has been removed from here.
+        // Visibility will now be managed explicitly within each state branch.
+
+        when (state) {
+            is PlaybackState.NeedsPairing -> {
+                webPairingFragment?.let { fragment ->
+                    if (fragment.isHidden) {
+                        transaction.show(fragment) // Show it if it was hidden
+                    }
+                    fragment.showPairingCode(state.pairingCode) // Update code on existing fragment
+                }
+                binding.fragmentContainer.visibility = View.VISIBLE
+            }
+            is PlaybackState.Syncing -> {
+                binding.statusTextview.text = "Syncing..."
+                binding.statusTextview.visibility = View.VISIBLE
+            }
+            is PlaybackState.Preparing -> {
+                binding.statusTextview.text = "Preparing ${state.item.type}..."
+                binding.statusTextview.visibility = View.VISIBLE
+                binding.fragmentContainer.visibility = View.VISIBLE 
+                // Content fragments will replace if necessary, or show if hidden
+                displayContentFragment(state, transaction)
+            }
+            is PlaybackState.Playing, is PlaybackState.PlayingWeb -> {
+                binding.fragmentContainer.visibility = View.VISIBLE
+                displayContentFragment(state, transaction)
+            }
+            is PlaybackState.Error -> {
+                binding.statusTextview.text = "Error: ${state.message}"
+                binding.statusTextview.visibility = View.VISIBLE
+            }
+            is PlaybackState.Idle -> {
+                // Nothing specific to show, containers remain GONE
+            }
+        }
+        transaction.commitAllowingStateLoss()
+    }
+    
+    private fun displayContentFragment(state: PlaybackState, transaction: androidx.fragment.app.FragmentTransaction) {
+        val newFragment: Fragment? = when (state) {
+            is PlaybackState.Playing -> {
+                when (state.item.type) {
+                    "video" -> VideoFragment.newInstance().apply {
+                        playerController?.let { setPlayerController(it) }
+                    }
+                    "image" -> ImageFragment.newInstance(state.assetUri.toString())
+                    else -> null
+                }
+            }
+            is PlaybackState.PlayingWeb -> {
+                val duration = state.item.duration ?: 60000L
+                when (state.item.type) {
+                    "googleslides" -> GoogleSlidesFragment.newInstance(state.item.src, duration)
+                    else -> WebFragment.newInstance(state.item.src, duration)
+                }
+            }
+            is PlaybackState.Preparing -> {
+                val currentFragment = supportFragmentManager.findFragmentById(R.id.fragment_container)
+                when (state.item.type) {
+                    "video" -> if (currentFragment !is VideoFragment) VideoFragment.newInstance() else null
+                    "image" -> if (currentFragment !is ImageFragment) ImageFragment.newInstance("") else null
+                    "googleslides", "web" -> if (currentFragment !is GoogleSlidesFragment && currentFragment !is WebFragment) WebFragment.newInstance("", 0L) else null
+                    else -> null
+                }
+            }
+            else -> null // Should not happen with current PlaybackState
+        }
+
+        newFragment?.let { fragmentToShow ->
+            val currentFragment = supportFragmentManager.findFragmentById(R.id.fragment_container)
+            if (currentFragment == null || currentFragment::class.java != fragmentToShow::class.java) {
+                transaction.replace(R.id.fragment_container, fragmentToShow)
+            } else if (currentFragment.isHidden) {
+                transaction.show(currentFragment)
+            }
+        }
+    }
+
+    companion object {
+        private const val TAG_WEB_PAIRING = "WebPairingFragment"
+    }
+}
+*/
