@@ -31,10 +31,7 @@ class GoogleSlidesFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         val url = arguments?.getString(ARG_WEB_URL) ?: return
         setupWebView()
-<<<<<<< HEAD
-=======
-        // The URL is loaded directly from the CMS, assuming it is already the correct embed URL.
->>>>>>> 2ba9d17e9b76c55abb22feceae21672220ffc1ed
+        // Loading the URL directly as it was working before
         binding.webView.loadUrl(url)
     }
 
@@ -61,7 +58,8 @@ class GoogleSlidesFragment : Fragment() {
                 databaseEnabled = true
                 mediaPlaybackRequiresUserGesture = false
                 mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
-                userAgentString = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36"
+                // Set a generic Android WebView User Agent String for TV optimization
+                userAgentString = "Mozilla/5.0 (Linux; Android) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.5359.128 Mobile Safari/537.36"
                 setSupportZoom(false)
                 builtInZoomControls = false
             }
@@ -75,7 +73,6 @@ class GoogleSlidesFragment : Fragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
-<<<<<<< HEAD
         // --- THE DEFINITIVE WEBVIEW MEMORY LEAK FIX ---
         binding.webView.apply {
             // Detach from the view hierarchy before destroying.
@@ -88,22 +85,6 @@ class GoogleSlidesFragment : Fragment() {
             // Finally, destroy the webview.
             destroy()
         }
-=======
-        // --- Definitive WebView Cleanup to Prevent Memory Leaks ---
-        binding.webView.apply {
-            // 1. Stop any loading
-            stopLoading()
-            // 2. Clear history, cache, and other state
-            clearHistory()
-            clearCache(true)
-            clearFormData()
-            // 3. Detach from the view hierarchy before destroying
-            (parent as? ViewGroup)?.removeView(this)
-            // 4. Finally, destroy the webview
-            destroy()
-        }
-        // --------------------------------------------------------
->>>>>>> 2ba9d17e9b76c55abb22feceae21672220ffc1ed
         _binding = null
     }
 

@@ -1,3 +1,4 @@
+/*
 package com.example.tvapp.ui
 
 import android.content.ComponentName
@@ -99,7 +100,7 @@ class MainActivity : FragmentActivity() {
         }
     }
 
-    override fun onStart() {
+    override fun fun onStart() {
         super.onStart()
         Intent(this, PlaybackService::class.java).also {
             bindService(it, connection, Context.BIND_AUTO_CREATE)
@@ -131,18 +132,14 @@ class MainActivity : FragmentActivity() {
     }
 
     private fun updateUiForState(state: PlaybackState) {
-        // Reset visibility for main containers to ensure a clean slate
+        // Ensure native status textview is hidden by default, unless explicitly needed
         binding.statusTextview.visibility = View.GONE
-        binding.fragmentContainer.visibility = View.GONE
+        binding.fragmentContainer.visibility = View.GONE // Start with container hidden
 
         val transaction = supportFragmentManager.beginTransaction()
-        
-        // Explicitly hide WebPairingFragment if it's not the current state
-        webPairingFragment?.let { fragment ->
-            if (fragment.isVisible && state !is PlaybackState.NeedsPairing) {
-                transaction.hide(fragment)
-            }
-        }
+
+        // The problematic blanket fragment hiding logic has been removed from here.
+        // Visibility will now be managed explicitly within each state branch.
 
         when (state) {
             is PlaybackState.NeedsPairing -> {
@@ -162,6 +159,7 @@ class MainActivity : FragmentActivity() {
                 binding.statusTextview.text = "Preparing ${state.item.type}..."
                 binding.statusTextview.visibility = View.VISIBLE
                 binding.fragmentContainer.visibility = View.VISIBLE 
+                // Content fragments will replace if necessary, or show if hidden
                 displayContentFragment(state, transaction)
             }
             is PlaybackState.Playing, is PlaybackState.PlayingWeb -> {
@@ -173,7 +171,7 @@ class MainActivity : FragmentActivity() {
                 binding.statusTextview.visibility = View.VISIBLE
             }
             is PlaybackState.Idle -> {
-                // Both containers are already GONE from initial setting
+                // Nothing specific to show, containers remain GONE
             }
         }
         transaction.commitAllowingStateLoss()
@@ -197,7 +195,7 @@ class MainActivity : FragmentActivity() {
                     else -> WebFragment.newInstance(state.item.src, duration)
                 }
             }
-            is PlaybackState.Preparing -> { // Ensure content fragments are correctly replaced/shown even in preparing state
+            is PlaybackState.Preparing -> {
                 val currentFragment = supportFragmentManager.findFragmentById(R.id.fragment_container)
                 when (state.item.type) {
                     "video" -> if (currentFragment !is VideoFragment) VideoFragment.newInstance() else null
@@ -223,3 +221,4 @@ class MainActivity : FragmentActivity() {
         private const val TAG_WEB_PAIRING = "WebPairingFragment"
     }
 }
+*/

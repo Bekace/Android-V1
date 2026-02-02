@@ -1,3 +1,4 @@
+/*
 // Crash fix and comment added by Gemini.
 // Cache logic removed by Gemini.
 // Corrected polling logic by Gemini.
@@ -72,12 +73,6 @@ class PlaybackEngine(
         playbackJob = engineScope.launch {
             runLifecycle()
         }
-    }
-
-    fun restartLifecycle() {
-        playbackJob?.cancel()
-        playbackJob = null
-        start()
     }
 
     fun stop() {
@@ -263,7 +258,7 @@ class PlaybackEngine(
                 if (e is CancellationException) throw e
                 Log.e("PlaybackEngine", "Error in content loop", e)
                 val currentItem = (_state.value as? PlaybackState.Playing)?.item
-                currentItem?.let { sendEvent("item_error", devicePreferences.screenCode ?: "unknown", it.id, e.message) }
+                currentItem?.let { sendEvent("item_error", deviceCode, it.id, e.message) }
 
                 withContext(Dispatchers.Main) {
                     val errorMsg = if (e is HttpException) "Server returned error ${e.code()}" else e.message
@@ -375,3 +370,4 @@ class PlaybackEngine(
         mediaContinuation = null
     }
 }
+*/

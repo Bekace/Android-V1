@@ -1,7 +1,6 @@
 package com.example.tvapp.ui
 
 import android.os.Bundle
-<<<<<<< HEAD
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -10,13 +9,6 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import coil.load
 import com.example.tvapp.R
-=======
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
-import androidx.fragment.app.Fragment
-import coil.load
->>>>>>> 2ba9d17e9b76c55abb22feceae21672220ffc1ed
 import com.example.tvapp.databinding.FragmentImageBinding
 
 class ImageFragment : Fragment() {
@@ -35,7 +27,6 @@ class ImageFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-<<<<<<< HEAD
 
         val imageUrl = arguments?.getString(ARG_IMAGE_URL)
         if (imageUrl == null) {
@@ -47,8 +38,8 @@ class ImageFragment : Fragment() {
             binding.imageView.load(imageUrl) {
                 crossfade(true)
                 error(R.drawable.ic_launcher_background) // Show a background on error
-                listener(onError = { _, result ->
-                    showError("Failed to load image: ${result.throwable.message}")
+                listener(onError = { _, throwable ->
+                    showError("Failed to load image: ${throwable.message}")
                 })
             }
         } catch (e: Exception) {
@@ -61,15 +52,6 @@ class ImageFragment : Fragment() {
         binding.imageView.isVisible = false
     }
 
-=======
-        arguments?.getString(ARG_IMAGE_URL)?.let { imageUrl ->
-            binding.imageView.load(imageUrl) {
-                crossfade(true) // Add a fade-in animation
-            }
-        }
-    }
-
->>>>>>> 2ba9d17e9b76c55abb22feceae21672220ffc1ed
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null

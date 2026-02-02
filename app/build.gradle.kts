@@ -52,10 +52,7 @@ dependencies {
     // Media3 (ExoPlayer)
     implementation("androidx.media3:media3-exoplayer:1.3.1")
     implementation("androidx.media3:media3-ui:1.3.1")
-<<<<<<< HEAD
     implementation("androidx.media3:media3-exoplayer-hls:1.3.1")
-=======
->>>>>>> 2ba9d17e9b76c55abb22feceae21672220ffc1ed
 
     // Retrofit (Networking)
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
@@ -66,7 +63,10 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
 
     // Coil (Image Loading)
-    implementation("io.coil-kt:coil:2.5.0")
+    implementation("io.coil-kt:coil:1.4.0")
+
+    // Explicitly set OkHttp version
+    implementation("com.squareup.okhttp3:okhttp:3.14.9")
 
     // Lifecycle
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.7.0")

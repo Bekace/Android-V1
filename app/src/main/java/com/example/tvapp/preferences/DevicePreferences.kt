@@ -11,7 +11,6 @@ class DevicePreferences(context: Context) {
         get() = prefs.getString(KEY_SCREEN_CODE, null)
         set(value) = prefs.edit().putString(KEY_SCREEN_CODE, value).apply()
 
-<<<<<<< HEAD
     var configHash: Int
         get() = prefs.getInt(KEY_CONFIG_HASH, 0)
         set(value) = prefs.edit().putInt(KEY_CONFIG_HASH, value).apply()
@@ -20,10 +19,5 @@ class DevicePreferences(context: Context) {
         private const val PREFS_NAME = "device_prefs"
         private const val KEY_SCREEN_CODE = "screen_code"
         private const val KEY_CONFIG_HASH = "config_hash"
-=======
-    companion object {
-        private const val PREFS_NAME = "device_prefs"
-        private const val KEY_SCREEN_CODE = "screen_code"
->>>>>>> 2ba9d17e9b76c55abb22feceae21672220ffc1ed
     }
 }

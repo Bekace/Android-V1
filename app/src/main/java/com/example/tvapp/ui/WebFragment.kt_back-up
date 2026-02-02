@@ -1,3 +1,4 @@
+/*
 package com.example.tvapp.ui
 
 import android.annotation.SuppressLint
@@ -60,8 +61,7 @@ class WebFragment : Fragment() {
 
                 // --- Security and general settings ---
                 mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
-                // Set a generic Android WebView User Agent String for TV optimization
-                userAgentString = "Mozilla/5.0 (Linux; Android) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.5359.128 Mobile Safari/537.36"
+                userAgentString = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36"
                 setSupportZoom(false)
                 builtInZoomControls = false
             }

@@ -9,10 +9,6 @@ import android.os.Binder
 import android.os.IBinder
 import android.util.Log
 import com.example.tvapp.R
-<<<<<<< HEAD
-=======
-import com.example.tvapp.cache.CacheManager
->>>>>>> 2ba9d17e9b76c55abb22feceae21672220ffc1ed
 import com.example.tvapp.cms.RetrofitClient
 import com.example.tvapp.engine.PlaybackEngine
 import com.example.tvapp.player.PlayerController
@@ -43,14 +39,8 @@ class PlaybackService : Service() {
         try {
             playerController = PlayerController(this)
             val cmsService = RetrofitClient.instance
-<<<<<<< HEAD
             val devicePreferences = DevicePreferences(this)
             playbackEngine = PlaybackEngine(this, cmsService, devicePreferences, playerController)
-=======
-            val cacheManager = CacheManager(this)
-            val devicePreferences = DevicePreferences(this)
-            playbackEngine = PlaybackEngine(this, cmsService, cacheManager, devicePreferences, playerController)
->>>>>>> 2ba9d17e9b76c55abb22feceae21672220ffc1ed
 
             try {
                 createNotificationChannel()

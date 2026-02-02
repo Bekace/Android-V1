@@ -1,3 +1,4 @@
+/*
 package com.example.tvapp.ui
 
 import android.annotation.SuppressLint
@@ -11,11 +12,11 @@ import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.fragment.app.Fragment
-import com.example.tvapp.databinding.FragmentWebBinding
+import com.example.tvapp.databinding.FragmentGoogleSlidesBinding
 
-class WebFragment : Fragment() {
+class GoogleSlidesFragment : Fragment() {
 
-    private var _binding: FragmentWebBinding? = null
+    private var _binding: FragmentGoogleSlidesBinding? = null
     private val binding get() = _binding!!
 
     override fun onCreateView(
@@ -23,7 +24,7 @@ class WebFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = FragmentWebBinding.inflate(inflater, container, false)
+        _binding = FragmentGoogleSlidesBinding.inflate(inflater, container, false)
         return binding.root
     }
 
@@ -31,6 +32,7 @@ class WebFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         val url = arguments?.getString(ARG_WEB_URL) ?: return
         setupWebView()
+        // Loading the URL directly as it was working before
         binding.webView.loadUrl(url)
     }
 
@@ -52,23 +54,17 @@ class WebFragment : Fragment() {
             }
 
             settings.apply {
-                // --- Features for general web content ---
                 javaScriptEnabled = true
                 domStorageEnabled = true
                 databaseEnabled = true
-                mediaPlaybackRequiresUserGesture = false // Allow autoplay for embedded media
-
-                // --- Security and general settings ---
+                mediaPlaybackRequiresUserGesture = false
                 mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
-                // Set a generic Android WebView User Agent String for TV optimization
-                userAgentString = "Mozilla/5.0 (Linux; Android) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.5359.128 Mobile Safari/537.36"
+                userAgentString = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36"
                 setSupportZoom(false)
                 builtInZoomControls = false
             }
 
             CookieManager.getInstance().setAcceptThirdPartyCookies(this, true)
-
-            // Disable all user interaction
             isFocusable = false
             isClickable = false
             setOnTouchListener { _, _ -> true }
@@ -77,20 +73,18 @@ class WebFragment : Fragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
-        // --- Definitive WebView Cleanup to Prevent Memory Leaks ---
+        // --- THE DEFINITIVE WEBVIEW MEMORY LEAK FIX ---
         binding.webView.apply {
-            // 1. Stop any loading
+            // Detach from the view hierarchy before destroying.
+            (parent as? ViewGroup)?.removeView(this)
             stopLoading()
-            // 2. Clear history, cache, and other state
+            // Clear history, cache, and other state.
             clearHistory()
             clearCache(true)
             clearFormData()
-            // 3. Detach from the view hierarchy before destroying
-            (parent as? ViewGroup)?.removeView(this)
-            // 4. Finally, destroy the webview
+            // Finally, destroy the webview.
             destroy()
         }
-        // --------------------------------------------------------
         _binding = null
     }
 
@@ -98,8 +92,8 @@ class WebFragment : Fragment() {
         private const val ARG_WEB_URL = "web_url"
         private const val ARG_WEB_DURATION = "web_duration"
 
-        fun newInstance(url: String, duration: Long): WebFragment {
-            return WebFragment().apply {
+        fun newInstance(url: String, duration: Long): GoogleSlidesFragment {
+            return GoogleSlidesFragment().apply {
                 arguments = Bundle().apply {
                     putString(ARG_WEB_URL, url)
                     putLong(ARG_WEB_DURATION, duration)

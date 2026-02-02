@@ -1,3 +1,4 @@
+/*
 package com.example.tvapp.player
 
 import android.content.Context
@@ -82,10 +83,6 @@ class PlayerController(context: Context) {
         player?.playWhenReady = true
     }
 
-    fun setAudioMuted(isMuted: Boolean) {
-        player?.volume = if (isMuted) 0f else 1f
-    }
-
     fun preload(url: String) {
         val downloadRequest = DownloadRequest.Builder(url, Uri.parse(url)).build()
         downloadManager.addDownload(downloadRequest)
@@ -106,3 +103,4 @@ class PlayerController(context: Context) {
         cache.release()
     }
 }
+*/
